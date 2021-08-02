@@ -5,29 +5,17 @@ SIMBA simulated galaxies from 850 um emission maps.
 
 '''
 
+output_name = "name"
+image = "image/path/fits"
+nu = 344
+total_time = '3000s'
+integration_time = '60s'
+alma_config = 6 # number between 1 and 9
+bands = {alma_config:{'pwv':0.5,'config':'/soft/casa-release-5.1.0-74.el7/data/alma/simmos/alma.cycle4.{}.cfg'.format(alma_config)}}
+antenna_config_file = bands[alma_config]['alma_config'],
 
-### File paths
+pwv = bands[alma_config]['pwv']
+clean_iter = 100
 
-simba_txt_file_path  = "stuff"
-simba_fits_file_path = "file"
-output_file_path     = "things"
-
-
-
-### CASA simalma parameters
-
-totaltime   = 3000 # in seconds
-integration = 60   # in seconds
-
-
-
-
-
-if __name__ == "__main__":
-	print "~"*40
-	print "CONFIG CONTENTS"
-	print  "~"*40
-	for name, value in globals().items():
-		if not name.startswith("__"):
-			print name.ljust(20), "=", value
-	print  "~"*40
+visibilities_file = 'sim%s/sim%s.alma.cycle4.%d.noisy.ms'%(output_name,output_name,alma_config)
+output_im_name = 'sim_{}.threshold{}.ms.fullRes'.format(output_name,0.01)
