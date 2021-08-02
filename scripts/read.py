@@ -33,7 +33,7 @@ def dump(in_image):
 
 
     image*=3 #fudge (target_flux/np.sum(image))
-    print np.sum(image)*1000, in_image
+    print (np.sum(image)*1000, in_image)
 
     h['CDELT1'] = -one_pix_asec/3600.
     h['CDELT2'] = one_pix_asec/3600.

@@ -32,7 +32,7 @@ for g in galaxies:
 			plt.imshow(obs, cmap=cmap)
 			contours = plt.contour(obs, [3*noise,5*noise,7*noise,10*noise, 15*noise], colors="white",linewidths=1)
 			# print "-------------------------------------"
-			print g, c
+			print (g, c)
 			# print contours.levels
 			# print len(contours.allsegs[0])
 			# print len(contours.allsegs[-1])
@@ -45,4 +45,4 @@ for g in galaxies:
 
 clumps  = np.array(clumps).reshape(len(galaxies), len(alma_configs),  len(angles))
 
-print clumps[0,6,0]
+print(clumps[0,6,0])
