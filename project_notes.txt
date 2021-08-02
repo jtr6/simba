@@ -18,3 +18,21 @@ Plan:
 
 3) Comparison of projected SFR distribution with 850um maps: measure inferred surface density of SF as estimated from resolved 850um map and assumed MBB SED to the underlying simulation. Examine observational biases and systematics related to resolution, orientation, depth, etc.
 
+
+
+#############################################
+
+FROM JIM, on operating casa:
+
+sim.py looks like a python script, but should be run with the casa executable like:
+
+>>> /soft/casa-release-5.1.0-74.el7/bin/casa --nologger -c “execfile(’sim.py’)”
+
+(nologger prevents casa from spawning a load of windows)
+
+Before you do anything, I would have a read of the simalma and clean tasks, which will tell you what the parameters mean:
+
+https://casa.nrao.edu/docs/TaskRef/simalma-task.html
+https://casa.nrao.edu/docs/TaskRef/clean-task.html
+
+Basically we turn Chris’s images into a ’sky model’ with pixels that represent flux density, and then simalma uses a given antenna configuration, integration time, noise model, etc. to produce visibilities. These are passed to clean which makes the actual images. The final outputs you should look at are files ending .image.pbcor.fits - these are the images that have been primary beam corrected and will be in units of mJy/beam.
