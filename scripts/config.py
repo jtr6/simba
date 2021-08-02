@@ -17,5 +17,5 @@ antenna_config_file = bands[alma_config]['alma_config'],
 pwv = bands[alma_config]['pwv']
 clean_iter = 100
 
-visibilities_file = 'sim%s/sim%s.alma.cycle4.%d.noisy.ms'%(output_name,output_name,alma_config)
+visibilities_file = 'sim{}/sim{}.alma.cycle4.{}.noisy.ms'.format(output_name,output_name,alma_config)
 output_im_name = 'sim_{}.threshold{}.ms.fullRes'.format(output_name,0.01)
