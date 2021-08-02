@@ -1,0 +1,5 @@
+#Ignore data and outputs 
+/data
+/output_imgs
+/casa_outputs
+/test_dir
