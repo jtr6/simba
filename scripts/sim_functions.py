@@ -5,15 +5,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import astropy.io
 
+class astropy.io.fits.ImageHDU:
+    def __init__(self, *args, **kwargs): pass
+
 class SimImage(astropy.io.fits.ImageHDU):
-    def __init__(self):
-        self.name = ()
-        self.image = ()
-        self.header = ()
-        self.alma_config = ()
-        self.angle = ()
-        self.exp_time = ()
-        self.beam_params = ()
+    def __init__(self, name, alma_config, angle, exp_time, beam_params, *args, **kwargs):
+        self.name = name
+        self.image = self.data.reshape((512, 512))[100:412, 100:412]
+        self.alma_config = alma_config
+        self.angle = angle
+        self.exp_time = exp_time
+        self.beam_params = beam_params
         self.noise = np.std(self.image[0:90, 0:90])
 
     
