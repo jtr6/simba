@@ -3,8 +3,9 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import astropy.io
 
-class SimImage:
+class SimImage(astropy.io.fits.ImageHDU):
     def __init__(self):
         self.name = ()
         self.image = ()
@@ -16,17 +17,15 @@ class SimImage:
         self.noise = np.std(self.image[0:90, 0:90])
 
     
-    def contours(self):
+    def contours(self, thresholds=[3,5,7]):
         '''
         Measure contours in images, return some contour object
         Can adapt code from clumps.py to fit here
+        Thresholds should be a list of however many thresholds are required for contours; default is 3, 6, 7 sigma
         '''
-        noise = self.noise
-        plt.imshow(self.image)
-        contour_lines = plt.contour(self.image, [3*noise,5*noise,7*noise,10*noise, 15*noise], colors="white", linewidths=1)
-        plt.savefig("g{}_o{}_conf{}_contours_multi_new.png".format(self.name, self.angle, self.alma_config))
-        c = (len(contour_lines.allsegs[-1]))
-        return c
+        contour_lines = plt.contour(self.image, [self.noise * t for t in thresholds], colors="white", linewidths=1)
+        self.clumps = (len(contour_lines.allsegs[-1]))
+        return contour_lines
     
     def fit(self):
         '''
@@ -37,11 +36,12 @@ class SimImage:
 
 class SimbaPlots:
 
-    def contour_plot(self, image, contours):
+    def contour_plot(self, image, contour_lines):
         '''
         Make figure of contour plots for an indivdual image. Image should be a SimImage instance.
         '''
         plt.imshow(image.image)
+        contour_lines()
         plt.savefig("g{}_o{}_conf{}_contours_multi_new.png".format(image.name, image.angle, image.alma_config))
 
 
