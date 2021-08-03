@@ -1,0 +1,38 @@
+Title: Resolved SMG morphology in the Simba simulations
+
+Broad goal: To generate an atlas of realistic ALMA observations at <0.1” resolution at 850um of the brightest SMGs in the large Simba volume (Lovell et al. 2020). 
+  
+Scientific background: Recently Hodge et al. (2019) presented the highest resolution sub-mm imaging of a sample of bright SMGs in the ALESS survey. The observations revealed that the dust morphologies resemble spiral arms, bar-like structures and clumps embedded in Sersic-like discs. The morphology of SMGs is of interest because it holds clues as to the physical drivers of intense star formation in these systems. For example, if SMGs are predominantly disk-like with spiral and bar-like features, this would indicate that star formation might be driven by internal processes such as instabilities, whereas a merger-driven scenario would result in quite distinct morphologies. The two main goals will be to generate synthetic images of Simba-SMGs using an identical observational set up to Hodge et al. 
+
+Main enquiry: The two science questions will be:
+
+1) Do the Simba-SMGs resemble real SMGs when ‘observed’ with the same set up. This can be assessed qualitatively and quantitatively (e.g. disk profile fitting, clump statistics, etc.)
+
+2) How do the observed features actually relate to the underlying dust/SFR distribution? Are the resolved features observed with ALMA reliable tracers of the underlying structure and distribution of star formation, or are they highly biased? We can address this question because we can trivially produce the actual projected SFR and dust distribution to contrast with the synthetic observations.
+
+Plan:
+
+1) Generate atlas of synthetic observations for multiple sight lines of each of the top 5 SMGs in Simba (that most closely match the observational selection in total flux density). Jim has provided scripts to get Jo going.
+
+2) Perform basic morphological analysis: qualitative assessment of features seen (e.g. arms, bars) and quantitative assessment such as Sersic profile fitting, sizes, similar to Hodge et al.
+
+3) Comparison of projected SFR distribution with 850um maps: measure inferred surface density of SF as estimated from resolved 850um map and assumed MBB SED to the underlying simulation. Examine observational biases and systematics related to resolution, orientation, depth, etc.
+
+
+
+#############################################
+
+FROM JIM, on operating casa:
+
+sim.py looks like a python script, but should be run with the casa executable like:
+
+>>> /soft/casa-release-5.1.0-74.el7/bin/casa --nologger -c “execfile(’sim.py’)”
+
+(nologger prevents casa from spawning a load of windows)
+
+Before you do anything, I would have a read of the simalma and clean tasks, which will tell you what the parameters mean:
+
+https://casa.nrao.edu/docs/TaskRef/simalma-task.html
+https://casa.nrao.edu/docs/TaskRef/clean-task.html
+
+Basically we turn Chris’s images into a ’sky model’ with pixels that represent flux density, and then simalma uses a given antenna configuration, integration time, noise model, etc. to produce visibilities. These are passed to clean which makes the actual images. The final outputs you should look at are files ending .image.pbcor.fits - these are the images that have been primary beam corrected and will be in units of mJy/beam.
