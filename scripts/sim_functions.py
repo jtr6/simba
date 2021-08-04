@@ -3,19 +3,24 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import astropy.io
+import astropy.io.fits
 
 
-class SimImage(astropy.io.fits.ImageHDU):
-    def __init__(self, name, alma_config, angle, exp_time, beam_params, *args, **kwargs):
-        astropy.io.fits.ImageHDU.__init__(self *args, **kwargs)
-        self.name = name
-        self.image = self.data.reshape((512, 512))[100:412, 100:412]
+class SimImage:
+    def __init__(self, data, header, alma_config, sourceID, angle, exp_time, nbbox=(0,90)):
+        '''
+        basically a fits storage object with data, header and various other attributes
+        '''
+        # super(astropy.io.fits.ImageHDU, self).__init__(*args, **kwargs)
+        self.data = data
+        self.header = header
+        self.name = f'{sourceID}_o{angle}_c{alma_config}'
         self.alma_config = alma_config
         self.angle = angle
         self.exp_time = exp_time
-        self.beam_params = beam_params
-        self.noise = np.std(self.image[0:90, 0:90])
+        self.beam_params = (header['BMAJ'], header['BMIN'], header['BPA'])
+        self.noise = np.std(self.data[nbbox[0]:nbbox[1],nbbox[0]:nbbox[1]])
+        self.clumps = (len(self.contours().allsegs[-1]))
 
     
     def contours(self, thresholds=[3,5,7]):
@@ -24,8 +29,7 @@ class SimImage(astropy.io.fits.ImageHDU):
         Can adapt code from clumps.py to fit here
         Thresholds should be a list of however many thresholds are required for contours; default is 3, 6, 7 sigma
         '''
-        contour_lines = plt.contour(self.image, [self.noise * t for t in thresholds], colors="white", linewidths=1)
-        self.clumps = (len(contour_lines.allsegs[-1]))
+        contour_lines = plt.contour(self.data, [self.noise * t for t in thresholds], colors="white", linewidths=1)
         return contour_lines
     
     def fit(self):
@@ -34,7 +38,7 @@ class SimImage(astropy.io.fits.ImageHDU):
         '''
         raise NotImplementedError
 
-
+s
 class SimbaPlots:
 
     def contour_plot(self, image, contour_lines):
