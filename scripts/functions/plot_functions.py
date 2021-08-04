@@ -13,8 +13,7 @@ class SimbaPlots:
         '''
         self.image = image
         self.contour = self.contour_plot(self.image, self.image.contours, thresholds)
-        # self.panel = self.panel_plot(images)
-        # self.beam = self.plot_beam(self.image.beam_params, self.image.pixel_scale)
+        self.beam = self.plot_beam(self.image.beam_params, self.image.pixel_scale)
 
     def contour_plot(self, image, contour_lines, thresholds):
         '''
@@ -23,7 +22,6 @@ class SimbaPlots:
         plt.imshow(image.data)
         contour_lines(thresholds)
         plt.show()
-        # plt.savefig("g{}_o{}_conf{}_contours_multi_new.png".format(image.name, image.angle, image.alma_config))
 
     def plot_beam(self, beam_params, pixscale, x = 400, y = 400):
         '''
@@ -38,37 +36,35 @@ class SimbaPlots:
         beam_ellipse = mpatches.Ellipse((x, y), 2*bmaj, 2*bmin, bpa.degree, edgecolor='white',facecolor='none')
         return beam_ellipse
 
-    def panel_plot(self, image_block):
-        '''
-        Produce a panel plot of given images (images should be an array of image arrays?)
-        '''
-        angles = len(images[0])
-        configs = len(images[1])
-        fig, axes = plt.subplots(angles, configs)
-        for c in configs:
-            # axes[0,c].set_title(baselines[c])  # Need to decide where to store baselines?!
-            for a in angles:
-                image = images[a,c]
-                axes[a,c] = plt.imshow(np.sqrt(image.data))
-            beam = image.beam()
-            axes[5,c].add_patch(beam)
-
-        for ax in fig.axes:
-            ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False)
-        plt.tight_layout(w_pad=0.2)
-        plt.axis('off')
-        # plt.savefig(plot_dir + "all_angles_g{}_1hr.png".format(g), bbox_inches=0)
-        plt.show()
-
-        raise NotImplementedError
-
     def resize_im():
         '''
         Resize images as they go to higher resolution, to make plot better
         '''
         raise NotImplementedError
+    
+def panel_plot(images):
+    '''
+    Produce a panel plot of given images (images should be an array of SimbaPlot objects?)
+    '''
+    angles = len(images[0])
+    configs = len(images[1])
+    fig, axes = plt.subplots(angles, configs)
+    for c in configs:
+        # axes[0,c].set_title(baselines[c])  # Need to decide where to store baselines?!
+        for a in angles:
+            image = images[a,c]
+            axes[a,c] = plt.imshow(np.sqrt(image.data))
+        beam = image.beam()
+        axes[5,c].add_patch(beam)
 
+    for ax in fig.axes:
+        ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False)
+    plt.tight_layout(w_pad=0.2)
+    plt.axis('off')
+    # plt.savefig(plot_dir + "all_angles_g{}_1hr.png".format(g), bbox_inches=0)
+    plt.show()
 
+    raise NotImplementedError
 
 def clean_axes(ax):
     ax.spines['right'].set_visible(False)

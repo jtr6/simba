@@ -6,6 +6,14 @@ import matplotlib.pyplot as plt
 import astropy.io.fits
 
 
+def fits_to_sim_image(file_path, alma_config=1, sourceID=1, angle=1, exp_time=3600):
+    file = astropy.io.fits.open(file_path)
+    data = file[0].data.squeeze()
+    header = file[0].header
+    sim_image = SimImage(data, header, alma_config, sourceID, angle, exp_time)
+    return sim_image
+
+
 class SimImage(astropy.io.fits.ImageHDU):
     def __init__(self, data, header, alma_config=1, sourceID=1, angle=1, exp_time=3600, nbbox=(0,90), thresholds=[5]):
         '''
