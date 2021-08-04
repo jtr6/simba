@@ -14,3 +14,5 @@ header = im[0].header
 
 test = SimImage(data, header, 6, "G100", 0, 3000)
 plots = SimbaPlots(test, thresholds = [3, 5, 10, 18])
+beam = plots.plot_beam(plots.image.beam_params, plots.image.pixel_scale)
+plots.contour_plot(plots.image, plots.image.contours, thresholds = [3, 5, 10, 18])
