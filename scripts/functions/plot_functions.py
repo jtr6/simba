@@ -2,15 +2,17 @@
 # Also includes the generic functions clean_axes, and uniform_figsize. 
 # (need to implement these in the above plotting functions too)
 
+from functions.sim_functions import SimImage
 import matplotlib.pyplot as plt
 import numpy as np
 
-class SimbaPlots:
+class SimbaPlots(SimImage):
     def __init__(self, image, thresholds=[5,10,18]):
         '''
         Class to deal with all the required plots.
         Image should be a SimImage instance
         '''
+        super().__init__(image.data, image.header)
         self.image = image
         self.contour = self.contour_plot(self.image, self.image.contours, thresholds)
         self.beam = self.plot_beam(self.image.beam_params, self.image.pixel_scale)
@@ -21,7 +23,8 @@ class SimbaPlots:
         '''
         plt.imshow(image.data)
         contour_lines(thresholds)
-        plt.show()
+        # plt.show()
+        plt.close()
 
     def plot_beam(self, beam_params, pixscale, x = 400, y = 400):
         '''
@@ -42,20 +45,20 @@ class SimbaPlots:
         '''
         raise NotImplementedError
     
-def panel_plot(images):
+def panel_plot(images,configs,angles):
     '''
     Produce a panel plot of given images (images should be an array of SimbaPlot objects?)
     '''
-    angles = len(images[0])
-    configs = len(images[1])
-    fig, axes = plt.subplots(angles, configs)
+    if images.shape != (len(angles), len(configs)):
+        raise ValueError('The image block has incorrect dimensions, should be of form [angles, configs]')
+    fig, axes = plt.subplots(len(angles), len(configs))
     for c in configs:
         # axes[0,c].set_title(baselines[c])  # Need to decide where to store baselines?!
         for a in angles:
-            image = images[a,c]
-            axes[a,c] = plt.imshow(np.sqrt(image.data))
+            image = images[a-1,c-1]
+            axes[a-1,c-1] = plt.imshow(np.sqrt(image.data))
         beam = image.beam()
-        axes[5,c].add_patch(beam)
+        axes[::-1,c-1].add_patch(beam)
 
     for ax in fig.axes:
         ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False)
@@ -63,6 +66,7 @@ def panel_plot(images):
     plt.axis('off')
     # plt.savefig(plot_dir + "all_angles_g{}_1hr.png".format(g), bbox_inches=0)
     plt.show()
+    # plt.close()
 
     raise NotImplementedError
 
