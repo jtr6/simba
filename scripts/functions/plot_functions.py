@@ -53,12 +53,16 @@ def panel_plot(images,configs,angles):
         raise ValueError('The image block has incorrect dimensions, should be of form [angles, configs]')
     fig, axes = plt.subplots(len(angles), len(configs))
     for c in configs:
+        print("config {}".format(c))
         # axes[0,c].set_title(baselines[c])  # Need to decide where to store baselines?!
         for a in angles:
+            print("----angle {}".format(a))
             image = images[a-1,c-1]
-            axes[a-1,c-1] = plt.imshow(np.sqrt(image.data))
-        beam = image.beam()
-        axes[::-1,c-1].add_patch(beam)
+            print("----------on axis {}".format((a, c)))
+            axes[a-1,c-1].imshow(image.image.data)
+            print("Here is some of the imshow data:", image.image.data[:30])
+        beam = image.beam
+        axes[a-1,c-1].add_patch(beam)
 
     for ax in fig.axes:
         ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False)
@@ -68,7 +72,7 @@ def panel_plot(images,configs,angles):
     plt.show()
     # plt.close()
 
-    raise NotImplementedError
+    # raise NotImplementedError
 
 def clean_axes(ax):
     ax.spines['right'].set_visible(False)
