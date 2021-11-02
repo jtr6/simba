@@ -57,12 +57,11 @@ def panel_plot(images,configs,angles):
         # axes[0,c].set_title(baselines[c])  # Need to decide where to store baselines?!
         for a in angles:
             print("----angle {}".format(a))
-            image = images[a-1,c-1]
+            image = images[a,c-1]
             print("----------on axis {}".format((a, c)))
-            axes[a-1,c-1].imshow(image.image.data)
-            print("Here is some of the imshow data:", image.image.data[:30])
+            axes[a,c-1].imshow(image.image.data)
         beam = image.beam
-        axes[a-1,c-1].add_patch(beam)
+        axes[a,c-1].add_patch(beam)
 
     for ax in fig.axes:
         ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False)

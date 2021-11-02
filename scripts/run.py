@@ -9,8 +9,8 @@ import numpy as np
 baselines = [155.6, 272.6, 460.0, 704.1, 1124.3, 1813.1, 3696.9, 6855.1, 12644.8]
 
 ## Now try for a series of files:
-configs = [1,2,3]
-angles  = [1,2,3,4]
+configs = [1,2,3,4,5,6,7,8,9]
+angles  = [0,1,2,3,4,5]
 
 image_list = []
 
