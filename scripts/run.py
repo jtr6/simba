@@ -17,7 +17,7 @@ image_list = []
 for angle in angles:
     all_configs = []
     for config in configs:
-        file = f'../output_imgs/sim_m100_g8_o{angle}.threshold0.01.ms.fullRes_1hr_conf{config}.image.pbcor.fits'
+        file = f'../output_imgs/sim_m100_g8_o{angle}.threshold0.01.ms.fullRes_10hr_conf{config}.image.pbcor.fits'
         image = fits_to_sim_image(file)
         plots = SimbaPlots(image, thresholds = [3, 5, 10, 18])
         all_configs.append(plots)

@@ -13,9 +13,9 @@ class SimbaPlots(SimImage):
         Image should be a SimImage instance
         '''
         super().__init__(image.data, image.header)
-        self.image = image
-        self.contour = self.contour_plot(self.image, self.image.contours, thresholds)
-        self.beam = self.plot_beam(self.image.beam_params, self.image.pixel_scale)
+        self.resized = self.resize_im()
+        self.contour = self.contour_plot(self.data, self.contours, thresholds)
+        self.beam = self.plot_beam(self.beam_params, self.pixel_scale)
 
     def contour_plot(self, image, contour_lines, thresholds):
         '''
@@ -26,7 +26,7 @@ class SimbaPlots(SimImage):
         # plt.show()
         plt.close()
 
-    def plot_beam(self, beam_params, pixscale, x = 400, y = 400):
+    def plot_beam(self, beam_params, pixscale):
         '''
         Returns mpatches ellipse object from beam params, in pixels, ready to plot
         '''
@@ -36,14 +36,26 @@ class SimbaPlots(SimImage):
         bpa = Angle(bpa, "radian")
         bmaj = bmaj / pixscale
         bmin = bmin / pixscale
+        x = 0.9 * len(self.resized)
+        y = 0.9 * len(self.resized)
         beam_ellipse = mpatches.Ellipse((x, y), 2*bmaj, 2*bmin, bpa.degree, edgecolor='white',facecolor='none')
         return beam_ellipse
 
-    def resize_im():
+    def resize_im(self):
         '''
         Resize images as they go to higher resolution, to make plot better
         '''
-        raise NotImplementedError
+        centre = len(self.data)/2
+        print("Centre: ", centre)
+        size = 5 * self.beam_params[0] / self.pixel_scale
+        print("Size: ", size)
+        size_min = int(centre - size)
+        size_max = int(centre + size)
+        if size >= len(self.data)/2:
+            return self.data
+        else:
+            print("Resizing!", size_min ,size_max)
+            return self.data[size_min:size_max, size_min:size_max]
     
 def panel_plot(images,configs,angles):
     '''
@@ -53,13 +65,10 @@ def panel_plot(images,configs,angles):
         raise ValueError('The image block has incorrect dimensions, should be of form [angles, configs]')
     fig, axes = plt.subplots(len(angles), len(configs))
     for c in configs:
-        print("config {}".format(c))
         # axes[0,c].set_title(baselines[c])  # Need to decide where to store baselines?!
         for a in angles:
-            print("----angle {}".format(a))
             image = images[a,c-1]
-            print("----------on axis {}".format((a, c)))
-            axes[a,c-1].imshow(image.image.data)
+            axes[a,c-1].imshow(image.resized)
         beam = image.beam
         axes[a,c-1].add_patch(beam)
 
