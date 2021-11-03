@@ -26,4 +26,4 @@ for angle in angles:
 image_block = np.array(image_list)
 
 
-panel_plot(image_block, configs, angles)
+panel_plot(image_block, configs, angles, save=True, plot_dir="../plots",g=8, exp=10)

@@ -46,18 +46,15 @@ class SimbaPlots(SimImage):
         Resize images as they go to higher resolution, to make plot better
         '''
         centre = len(self.data)/2
-        print("Centre: ", centre)
         size = 5 * self.beam_params[0] / self.pixel_scale
-        print("Size: ", size)
         size_min = int(centre - size)
         size_max = int(centre + size)
         if size >= len(self.data)/2:
             return self.data
         else:
-            print("Resizing!", size_min ,size_max)
             return self.data[size_min:size_max, size_min:size_max]
     
-def panel_plot(images,configs,angles):
+def panel_plot(images,configs,angles,save=False,plot_dir="../../plots",g=1,exp=1):
     '''
     Produce a panel plot of given images (images should be an array of SimbaPlot objects?)
     '''
@@ -76,11 +73,12 @@ def panel_plot(images,configs,angles):
         ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False)
     plt.tight_layout(w_pad=0.2)
     plt.axis('off')
-    # plt.savefig(plot_dir + "all_angles_g{}_1hr.png".format(g), bbox_inches=0)
-    plt.show()
-    # plt.close()
+    if save:
+        plt.savefig(plot_dir + "/all_angles_g{}_{}hr.png".format(g, exp), bbox_inches=0)
+        plt.close()
+    else:
+        plt.show()
 
-    # raise NotImplementedError
 
 def clean_axes(ax):
     ax.spines['right'].set_visible(False)
