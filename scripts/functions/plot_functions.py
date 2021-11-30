@@ -7,24 +7,30 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class SimbaPlots(SimImage):
-    def __init__(self, image, thresholds=[5,10,18]):
+    def __init__(self, image, plot_dir, save_contours=False, save_ims=False, thresholds=[5,10,18]):
         '''
         Class to deal with all the required plots.
         Image should be a SimImage instance
         '''
         super().__init__(image.data, image.header)
+        self.plot_dir = plot_dir
         self.resized = self.resize_im()
-        self.contour = self.contour_plot(self.data, self.contours, thresholds)
+        self.resized_contours = self.contours(self.resized, thresholds)
+        self.contour = self.contour_plot(self.resized, self.resized_contours, thresholds, save=save_contours)
         self.beam = self.plot_beam(self.beam_params, self.pixel_scale)
 
-    def contour_plot(self, image, contour_lines, thresholds):
+
+    def contour_plot(self, image, contour_lines, thresholds, save=False):
         '''
         Make figure of contour plots for an individual image. Image should be a SimImage instance.
         '''
-        plt.imshow(image.data)
-        contour_lines(thresholds)
-        # plt.show()
-        plt.close()
+        plt.imshow(self.resized)
+        contour_lines
+        if save:
+            plt.savefig(self.plot_dir + "/individual_plots/contours/{}.png".format(self.ident), format="png")
+            plt.close()
+        else:
+            plt.close()
 
     def plot_beam(self, beam_params, pixscale):
         '''
@@ -53,6 +59,10 @@ class SimbaPlots(SimImage):
             return self.data
         else:
             return self.data[size_min:size_max, size_min:size_max]
+    
+    # def plot_single(self, save=False, show=False):
+
+
     
 def panel_plot(images,configs,angles,save=False,plot_dir="../../plots",g=1,exp=1):
     '''

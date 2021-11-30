@@ -26,17 +26,17 @@ class SimImage(astropy.io.fits.ImageHDU):
         super().__init__(data, header, name=self.ident)
         self.beam_params = (self.header['BMAJ'], self.header['BMIN'], self.header['BPA'])
         self.noise = np.std(self.data[nbbox[0]:nbbox[1],nbbox[0]:nbbox[1]])
-        self.clumps = (len(self.contours(thresholds).allsegs[-1]))
+        self.clumps = (len(self.contours(self.data, thresholds).allsegs[-1]))
         self.pixel_scale = self.header['CDELT2']
 
     
-    def contours(self, thresholds):
+    def contours(self, image, thresholds):
         '''
         Measure contours in images, return some contour object
         Code adapted from clumps.py
         Thresholds should be a list of however many thresholds are required for contours; default is 3, 6, 7 sigma
         '''
-        contour_lines = plt.contour(self.data, [self.noise * t for t in thresholds], colors="white", linewidths=1)
+        contour_lines = plt.contour(image, [self.noise * t for t in thresholds], colors="white", linewidths=1)
         return contour_lines
     
 

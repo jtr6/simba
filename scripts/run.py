@@ -19,11 +19,11 @@ for angle in angles:
     for config in configs:
         file = f'../output_imgs/sim_m100_g8_o{angle}.threshold0.01.ms.fullRes_10hr_conf{config}.image.pbcor.fits'
         image = fits_to_sim_image(file)
-        plots = SimbaPlots(image, thresholds = [3, 5, 10, 18])
+        plots = SimbaPlots(image, plot_dir="../plots", save_contours=True, thresholds = [3, 5, 10, 18])
         all_configs.append(plots)
     image_list.append(all_configs)
 
 image_block = np.array(image_list)
 
 
-panel_plot(image_block, configs, angles, save=True, plot_dir="../plots",g=8, exp=10)
+panel_plot(image_block, configs, angles, save=True, plot_dir="../plots/panel_plots",g=8, exp=10)
