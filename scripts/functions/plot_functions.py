@@ -102,7 +102,7 @@ def panel_plot(images,configs,angles,save=False,plot_dir="../../plots",g=1,exp=1
         raise ValueError('The image block has incorrect dimensions, should be of form [angles, configs]')
     fig, axes = plt.subplots(len(angles), len(configs))
     for c in configs:
-        # axes[0,c].set_title(images[0,c-1].alma_config)  # Need to decide where to store baselines?!
+        axes[0,c-1].set_title(images[1,c-1].alma_config)
         for a in angles:
             image = images[a,c-1]
             axes[a,c-1].imshow(image.cutout, cmap=cmap)
