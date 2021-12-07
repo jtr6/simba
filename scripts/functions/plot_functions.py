@@ -4,15 +4,18 @@
 
 from functions.sim_functions import SimImage
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import numpy as np
 import astropy
+cmap = cm.magma
+cmap.set_bad(color='black')
 
 
-def fits_to_simba_image(file_path, alma_config=1, sourceID=1, angle=1, exp_time=3600,nbbox=(0,90), plot_dir="../plots", save_contours=False, thresholds=[5,10,18]):
+def fits_to_simba_image(file_path, alma_config=1, sourceID=1, angle=1, exp_time=3600,nbbox=(0,90), plot_dir="../plots", save_img=False, save_contours=False, thresholds=[5,10,18]):
     file = astropy.io.fits.open(file_path)
     data = file[0].data.squeeze()
     header = file[0].header
-    sim_image = SimbaPlots(data, header, alma_config, sourceID, angle, exp_time, nbbox, plot_dir, save_contours, thresholds)
+    sim_image = SimbaPlots(data, header, alma_config, sourceID, angle, exp_time, nbbox, plot_dir, save_img, save_contours, thresholds)
     return sim_image
 
 
@@ -20,6 +23,7 @@ class SimbaPlots(astropy.io.fits.ImageHDU):
     def __init__(self, data, header, alma_config=1, sourceID=1, angle=1, exp_time=3600, nbbox=(0,90), plot_dir="../plots", save_img=True, save_contours=False, thresholds=[5,10,18]):
         '''
         Class that has fits storage with attributes & plots
+        self.clumps returns how many clumps there are about 5 sigma
         '''
         self.ident = f'{sourceID}_o{angle}_c{alma_config}_exp{exp_time}'
         super().__init__(data, header, name=self.ident)
@@ -30,29 +34,22 @@ class SimbaPlots(astropy.io.fits.ImageHDU):
         self.pixel_scale = self.header['CDELT2']
         self.beam_params = (self.header['BMAJ'], self.header['BMIN'], self.header['BPA'])
         self.limits = self.resize_limits()
+        self.cutout = self.data[self.limits[0]:self.limits[1], self.limits[0]:self.limits[1]]
         self.beam = self.plot_beam(self.beam_params, self.pixel_scale)
         self.noise = np.std(self.data[nbbox[0]:nbbox[1],nbbox[0]:nbbox[1]])
         self.contour = self.contours(save_contours, thresholds)
         self.plot = self.plot_single(save_img)
-        self.clumps = (len(self.contours(save_contours, thresholds).allsegs[-1]))
+        self.clumps = (len(self.contours(save_contours, thresholds=[5]).allsegs[-1]))
 
-    # def contours(self, image, thresholds):
-        # '''
-        # Measure contours in images, return some contour object
-        # Code adapted from clumps.py
-        # Thresholds should be a list of however many thresholds are required for contours; default is 3, 6, 7 sigma
-        # '''
-        # contour_lines = plt.contour(image, [self.noise * t for t in thresholds], colors="white", linewidths=1)
-        # return contour_lines
 
     def contours(self, save_contours, thresholds):
         '''
         Measure contours in images, return some contour object.
         Optionally, make figure of contour plots for an individual image. Image should be a SimImage instance.
         '''
-        contour_lines = plt.contour(self.data[self.limits[0]:self.limits[1], self.limits[0]:self.limits[1]], [self.noise * t for t in thresholds], colors="white", linewidths=1)
+        contour_lines = plt.contour(self.cutout, [self.noise * t for t in thresholds], colors="white", linewidths=1)
         if save_contours:
-            plt.imshow(self.data[self.limits[0]:self.limits[1], self.limits[0]:self.limits[1]])
+            plt.imshow(self.cutout, cmap=cmap)
             plt.savefig(self.plot_dir + "/individual_plots/contours/{}.png".format(self.ident), format="png")
             plt.close()
         else:
@@ -70,12 +67,11 @@ class SimbaPlots(astropy.io.fits.ImageHDU):
         bmaj = bmaj / pixscale
         bmin = bmin / pixscale
         x = y = 0.9 * self.limits[1]
-        # y = 0.9 * self.resize_limits[1]
         beam_ellipse = mpatches.Ellipse((x, y), 2*bmaj, 2*bmin, bpa.degree, edgecolor='white',facecolor='none')
         return beam_ellipse
     
     def plot_single(self, save, show=False):
-        plt.imshow(self.data)
+        plt.imshow(self.data, cmap=cmap)
         plt.gca().set_xlim(self.limits[0], self.limits[1])
         plt.gca().set_ylim(self.limits[0], self.limits[1])
         if show:
@@ -88,7 +84,7 @@ class SimbaPlots(astropy.io.fits.ImageHDU):
 
     def resize_limits(self):
         centre = len(self.data)/2
-        size = 5 * self.beam_params[0] / self.pixel_scale
+        size = 8 * self.beam_params[0] / self.pixel_scale
         size_min = int(centre - size)
         size_max = int(centre + size)
         if size >= len(self.data)/2:
@@ -106,10 +102,10 @@ def panel_plot(images,configs,angles,save=False,plot_dir="../../plots",g=1,exp=1
         raise ValueError('The image block has incorrect dimensions, should be of form [angles, configs]')
     fig, axes = plt.subplots(len(angles), len(configs))
     for c in configs:
-        # axes[0,c].set_title(baselines[c])  # Need to decide where to store baselines?!
+        # axes[0,c].set_title(images[0,c-1].alma_config)  # Need to decide where to store baselines?!
         for a in angles:
             image = images[a,c-1]
-            axes[a,c-1].imshow(image.resized)
+            axes[a,c-1].imshow(image.cutout, cmap=cmap)
         beam = image.beam
         axes[a,c-1].add_patch(beam)
 
