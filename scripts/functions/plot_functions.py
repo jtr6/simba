@@ -32,30 +32,32 @@ class SimbaPlots(astropy.io.fits.ImageHDU):
         self.limits = self.resize_limits()
         self.beam = self.plot_beam(self.beam_params, self.pixel_scale)
         self.noise = np.std(self.data[nbbox[0]:nbbox[1],nbbox[0]:nbbox[1]])
-        self.contour = self.contour_plot(self.contours, save_contours)
+        self.contour = self.contours(save_contours, thresholds)
         self.plot = self.plot_single(save_img)
-        self.clumps = (len(self.contours(self.data, thresholds).allsegs[-1]))
+        self.clumps = (len(self.contours(save_contours, thresholds).allsegs[-1]))
 
-    def contours(self, image, thresholds):
-        '''
-        Measure contours in images, return some contour object
-        Code adapted from clumps.py
-        Thresholds should be a list of however many thresholds are required for contours; default is 3, 6, 7 sigma
-        '''
-        contour_lines = plt.contour(image, [self.noise * t for t in thresholds], colors="white", linewidths=1)
-        return contour_lines
+    # def contours(self, image, thresholds):
+        # '''
+        # Measure contours in images, return some contour object
+        # Code adapted from clumps.py
+        # Thresholds should be a list of however many thresholds are required for contours; default is 3, 6, 7 sigma
+        # '''
+        # contour_lines = plt.contour(image, [self.noise * t for t in thresholds], colors="white", linewidths=1)
+        # return contour_lines
 
-    def contour_plot(self, contour_lines, save_contours):
+    def contours(self, save_contours, thresholds):
         '''
-        Make figure of contour plots for an individual image. Image should be a SimImage instance.
+        Measure contours in images, return some contour object.
+        Optionally, make figure of contour plots for an individual image. Image should be a SimImage instance.
         '''
-        plt.imshow(self.data[self.limits[0]:self.limits[1], self.limits[0]:self.limits[1]])
-        contour_lines
+        contour_lines = plt.contour(self.data[self.limits[0]:self.limits[1], self.limits[0]:self.limits[1]], [self.noise * t for t in thresholds], colors="white", linewidths=1)
         if save_contours:
+            plt.imshow(self.data[self.limits[0]:self.limits[1], self.limits[0]:self.limits[1]])
             plt.savefig(self.plot_dir + "/individual_plots/contours/{}.png".format(self.ident), format="png")
             plt.close()
         else:
             plt.close()
+        return contour_lines
 
     def plot_beam(self, beam_params, pixscale):
         '''
