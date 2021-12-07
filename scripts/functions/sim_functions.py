@@ -29,7 +29,6 @@ class SimImage(astropy.io.fits.ImageHDU):
         self.clumps = (len(self.contours(self.data, thresholds).allsegs[-1]))
         self.pixel_scale = self.header['CDELT2']
 
-    
     def contours(self, image, thresholds):
         '''
         Measure contours in images, return some contour object
@@ -38,7 +37,6 @@ class SimImage(astropy.io.fits.ImageHDU):
         '''
         contour_lines = plt.contour(image, [self.noise * t for t in thresholds], colors="white", linewidths=1)
         return contour_lines
-    
 
 
 def configure_inputs():

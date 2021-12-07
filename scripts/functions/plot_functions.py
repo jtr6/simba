@@ -5,28 +5,53 @@
 from functions.sim_functions import SimImage
 import matplotlib.pyplot as plt
 import numpy as np
+import astropy
 
-class SimbaPlots(SimImage):
-    def __init__(self, image, plot_dir, save_contours=False, save_ims=False, thresholds=[5,10,18]):
+
+def fits_to_simba_image(file_path, alma_config=1, sourceID=1, angle=1, exp_time=3600,nbbox=(0,90), plot_dir="../plots", save_contours=False, thresholds=[5,10,18]):
+    file = astropy.io.fits.open(file_path)
+    data = file[0].data.squeeze()
+    header = file[0].header
+    sim_image = SimbaPlots(data, header, alma_config, sourceID, angle, exp_time, nbbox, plot_dir, save_contours, thresholds)
+    return sim_image
+
+
+class SimbaPlots(astropy.io.fits.ImageHDU):
+    def __init__(self, data, header, alma_config=1, sourceID=1, angle=1, exp_time=3600, nbbox=(0,90), plot_dir="../plots", save_img=True, save_contours=False, thresholds=[5,10,18]):
         '''
-        Class to deal with all the required plots.
-        Image should be a SimImage instance
+        Class that has fits storage with attributes & plots
         '''
-        super().__init__(image.data, image.header)
+        self.ident = f'{sourceID}_o{angle}_c{alma_config}_exp{exp_time}'
+        super().__init__(data, header, name=self.ident)
         self.plot_dir = plot_dir
-        self.resized = self.resize_im()
-        self.resized_contours = self.contours(self.resized, thresholds)
-        self.contour = self.contour_plot(self.resized, self.resized_contours, thresholds, save=save_contours)
+        self.alma_config = alma_config
+        self.angle = angle
+        self.exp_time = exp_time
+        self.pixel_scale = self.header['CDELT2']
+        self.beam_params = (self.header['BMAJ'], self.header['BMIN'], self.header['BPA'])
+        self.limits = self.resize_limits()
         self.beam = self.plot_beam(self.beam_params, self.pixel_scale)
+        self.noise = np.std(self.data[nbbox[0]:nbbox[1],nbbox[0]:nbbox[1]])
+        self.contour = self.contour_plot(self.contours, save_contours)
+        self.plot = self.plot_single(save_img)
+        self.clumps = (len(self.contours(self.data, thresholds).allsegs[-1]))
 
+    def contours(self, image, thresholds):
+        '''
+        Measure contours in images, return some contour object
+        Code adapted from clumps.py
+        Thresholds should be a list of however many thresholds are required for contours; default is 3, 6, 7 sigma
+        '''
+        contour_lines = plt.contour(image, [self.noise * t for t in thresholds], colors="white", linewidths=1)
+        return contour_lines
 
-    def contour_plot(self, image, contour_lines, thresholds, save=False):
+    def contour_plot(self, contour_lines, save_contours):
         '''
         Make figure of contour plots for an individual image. Image should be a SimImage instance.
         '''
-        plt.imshow(self.resized)
+        plt.imshow(self.data[self.limits[0]:self.limits[1], self.limits[0]:self.limits[1]])
         contour_lines
-        if save:
+        if save_contours:
             plt.savefig(self.plot_dir + "/individual_plots/contours/{}.png".format(self.ident), format="png")
             plt.close()
         else:
@@ -42,25 +67,32 @@ class SimbaPlots(SimImage):
         bpa = Angle(bpa, "radian")
         bmaj = bmaj / pixscale
         bmin = bmin / pixscale
-        x = 0.9 * len(self.resized)
-        y = 0.9 * len(self.resized)
+        x = y = 0.9 * self.limits[1]
+        # y = 0.9 * self.resize_limits[1]
         beam_ellipse = mpatches.Ellipse((x, y), 2*bmaj, 2*bmin, bpa.degree, edgecolor='white',facecolor='none')
         return beam_ellipse
+    
+    def plot_single(self, save, show=False):
+        plt.imshow(self.data)
+        plt.gca().set_xlim(self.limits[0], self.limits[1])
+        plt.gca().set_ylim(self.limits[0], self.limits[1])
+        if show:
+            plt.show()
+        if save:
+            plt.savefig(self.plot_dir + "/individual_plots/{}.png".format(self.ident), format="png")
+            plt.close()
+        else:
+            plt.close()
 
-    def resize_im(self):
-        '''
-        Resize images as they go to higher resolution, to make plot better
-        '''
+    def resize_limits(self):
         centre = len(self.data)/2
         size = 5 * self.beam_params[0] / self.pixel_scale
         size_min = int(centre - size)
         size_max = int(centre + size)
         if size >= len(self.data)/2:
-            return self.data
+            return (0, len(self.data))
         else:
-            return self.data[size_min:size_max, size_min:size_max]
-    
-    # def plot_single(self, save=False, show=False):
+            return (size_min, size_max)
 
 
     
