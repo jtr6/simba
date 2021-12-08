@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
 import astropy
+from astropy.modeling.models import Gaussian2D
 cmap = cm.magma
 cmap.set_bad(color='black')
 
@@ -35,10 +36,10 @@ class SimbaPlots(astropy.io.fits.ImageHDU):
         self.beam_params = (self.header['BMAJ'], self.header['BMIN'], self.header['BPA'])
         self.limits = self.resize_limits()
         self.cutout = self.data[self.limits[0]:self.limits[1], self.limits[0]:self.limits[1]]
-        self.beam = self.plot_beam(self.beam_params, self.pixel_scale)
+        self.beam = self.plot_beam()
         self.noise = np.std(self.data[nbbox[0]:nbbox[1],nbbox[0]:nbbox[1]])
-        self.contour = self.contours(save_contours, thresholds)
-        self.plot = self.plot_single(save_img)
+        # self.contour = self.contours(save_contours, thresholds)
+        # self.plot = self.plot_single(save_img)
         self.clumps = (len(self.contours(save_contours, thresholds=[5]).allsegs[-1]))
 
 
@@ -56,21 +57,24 @@ class SimbaPlots(astropy.io.fits.ImageHDU):
             plt.close()
         return contour_lines
 
-    def plot_beam(self, beam_params, pixscale):
+    def plot_beam(self):
         '''
         Returns mpatches ellipse object from beam params, in pixels, ready to plot
         '''
         from astropy.coordinates import Angle
         import matplotlib.patches as mpatches
-        bmaj, bmin, bpa = beam_params
+        bmaj, bmin, bpa = self.beam_params
         bpa = Angle(bpa, "radian")
-        bmaj = bmaj / pixscale
-        bmin = bmin / pixscale
+        bmaj = bmaj / self.pixel_scale
+        bmin = bmin / self.pixel_scale
         x = y = 0.9 * self.limits[1]
         beam_ellipse = mpatches.Ellipse((x, y), 2*bmaj, 2*bmin, bpa.degree, edgecolor='white',facecolor='none')
         return beam_ellipse
     
     def plot_single(self, save, show=False):
+        '''
+        Creates a single cutout plot of the synthetic observation
+        '''
         plt.imshow(self.data, cmap=cmap)
         plt.gca().set_xlim(self.limits[0], self.limits[1])
         plt.gca().set_ylim(self.limits[0], self.limits[1])
@@ -83,6 +87,9 @@ class SimbaPlots(astropy.io.fits.ImageHDU):
             plt.close()
 
     def resize_limits(self):
+        '''
+        Defines the limits for plotting, so that the galaxy is centred and scaled
+        '''
         centre = len(self.data)/2
         size = 8 * self.beam_params[0] / self.pixel_scale
         size_min = int(centre - size)
@@ -91,6 +98,22 @@ class SimbaPlots(astropy.io.fits.ImageHDU):
             return (0, len(self.data))
         else:
             return (size_min, size_max)
+
+    def psf(self, save):
+        '''
+        Create a psf image for GALFIT to use
+        '''
+        y, x = np.mgrid[self.limits[0]:self.limits[1], self.limits[0]:self.limits[1]]
+        bmaj, bmin, bpa = [ a / self.pixel_scale for a in self.beam_params]
+        centre = len(self.data)/2
+        psf = Gaussian2D(100, centre, centre, bmaj, bmin, theta=bpa)(x,y)
+        plt.imshow(psf)      
+        if save:
+            plt.savefig(self.plot_dir + "/individual_plots/psf/{}.png".format(self.ident), format="png")
+            plt.close()
+        else:
+            plt.close()
+
 
 
     

@@ -19,7 +19,10 @@ for angle in angles:
     for config in configs:
         file = f'../output_imgs/sim_m100_g8_o{angle}.threshold0.01.ms.fullRes_10hr_conf{config}.image.pbcor.fits'
         image = fits_to_simba_image(file, alma_config=config, sourceID="g8", angle=angle, exp_time=36000, plot_dir="../plots", save_img=False, save_contours=False, thresholds=[3,5,10,18])
-        print(image.clumps)
+        image.contours(save_contours=True,  thresholds=[5,10,18])
+        image.plot_single(save=True)
+        image.psf(save=True)
+        # print(image.clumps)
         all_configs.append(image)
     image_list.append(all_configs)
 
